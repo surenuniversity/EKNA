@@ -1,79 +1,63 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Paper Presentation - Symposium 2025</title>
+  <meta charset="UTF-8">
+  <title>Symposium Registration</title>
   <style>
-    body{margin:0;font-family:Inter,Arial;background:#0f1724;color:#fff;line-height:1.6;padding:20px}
-    .container{max-width:800px;margin:auto;background:#0b1220;padding:20px;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.4)}
-    h1{color:#08a0ff}
-    h2{color:#6de0ff;margin-top:20px}
-    ul{margin:10px 0 20px 20px}
-    form{margin-top:20px}
-    input,select,textarea{width:100%;padding:10px;margin:8px 0;border-radius:8px;border:none}
-    button{padding:12px 20px;background:#08a0ff;color:#022;font-weight:600;border-radius:10px;border:none;cursor:pointer}
-    button:hover{background:#6de0ff}
-    .msg{margin-top:15px;font-weight:bold}
+    body { font-family: Arial, sans-serif; background: #f4f4f4; }
+    .container {
+      max-width: 600px; margin: 50px auto;
+      background: white; padding: 20px; border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    input, select, textarea, button {
+      width: 100%; padding: 10px; margin: 8px 0; border-radius: 5px; border: 1px solid #ccc;
+    }
+    button {
+      background: #007BFF; color: white; border: none; cursor: pointer;
+    }
+    button:hover { background: #0056b3; }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Paper Presentation</h1>
-    <p>
-      Showcase your innovative research, technical ideas, and academic excellence by presenting papers on trending technologies.
-    </p>
-
-    <h2>Rules</h2>
-    <ul>
-      <li>Maximum team size: 2</li>
-      <li>Paper must be in IEEE format</li>
-      <li>Time limit: 10 mins presentation + 5 mins Q&A</li>
-      <li>Topics: AI, ML, IoT, Cloud, Cybersecurity</li>
-      <li>Plagiarism not allowed</li>
-    </ul>
-
-    <h2>Register Now</h2>
-    <form id="eventForm">
-      <input type="text" name="name" placeholder="Your Name" required>
-      <input type="email" name="email" placeholder="Your Email" required>
-      <input type="text" name="phone" placeholder="Phone Number" required>
-      <input type="text" name="college" placeholder="College Name" required>
-      <select name="year" required>
-        <option value="">Select Year</option>
-        <option>1st Year</option>
-        <option>2nd Year</option>
-        <option>3rd Year</option>
-        <option>4th Year</option>
+    <h2>College Symposium Registration</h2>
+    <form id="regForm">
+      <input type="text" name="name" placeholder="Full Name" required>
+      <input type="email" name="email" placeholder="Email" required>
+      <input type="text" name="phone" placeholder="Phone" required>
+      <input type="text" name="college" placeholder="College" required>
+      <input type="text" name="year" placeholder="Year">
+      <select name="event" required>
+        <option value="">-- Select Event --</option>
+        <option value="Paper Presentation">Paper Presentation</option>
+        <option value="Coding Contest">Coding Contest</option>
+        <option value="Robotics">Robotics</option>
       </select>
-      <textarea name="remarks" placeholder="Any Remarks (optional)"></textarea>
-      
-      <!-- hidden field to auto-fill event name -->
-      <input type="hidden" name="events" value="Paper Presentation">
-
+      <textarea name="remarks" placeholder="Remarks"></textarea>
       <button type="submit">Submit Registration</button>
-      <div id="msg" class="msg"></div>
     </form>
+    <p id="msg"></p>
   </div>
 
   <script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzR3NdS2KXBTwRJiAH1ZVJZyXYwgm1NTg3DlMVG57zYJWIHwhu1AHA1b4tHtfGepwyW/exec"; // replace this
-    
-    document.getElementById("eventForm").addEventListener("submit", async function(e){
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxwlfpJ6nG4OZgU36UtUoX7rXwf_lre2-NfABxcGHXE8oHCsRmctmDnRJ4JtzZ4icrz/exec"; // << Replace with your URL
+
+    document.getElementById("regForm").addEventListener("submit", async (e) => {
       e.preventDefault();
-      const formData = new FormData(this);
-      const params = new URLSearchParams();
-      formData.forEach((v,k)=>params.append(k,v));
-      
+      const formData = new FormData(e.target);
+      const params = new URLSearchParams(formData);
       try {
-        const res = await fetch(WEB_APP_URL + "?" + params.toString());
-        document.getElementById("msg").innerText = "✅ Registration successful!";
-        this.reset();
+        const res = await fetch(`${WEB_APP_URL}?${params}`);
+        const data = await res.json();
+        document.getElementById("msg").innerText = data.message;
+        e.target.reset();
       } catch (err) {
-        document.getElementById("msg").innerText = "❌ Error submitting form. Try again.";
+        document.getElementById("msg").innerText = "Error submitting form.";
       }
     });
   </script>
 </body>
 </html>
+
 
