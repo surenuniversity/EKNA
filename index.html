@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Symposium Registration</title>
+  <style>
+    :root{
+      --bg:#0f1724;
+      --card:#0b1220;
+      --accent:#08a0ff;
+      --muted:#94a3b8;
+      --radius:12px;
+    }
+    *{box-sizing:border-box;font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;}
+    body{margin:0;background:linear-gradient(180deg,#071026 0%, #071933 60%);color:#e6eef8;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:28px}
+    .container{width:100%;max-width:880px;background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);border:1px solid rgba(255,255,255,0.04);padding:28px;border-radius:16px;box-shadow:0 8px 40px rgba(2,6,23,0.6)}
+    h1{margin:0 0 6px 0;font-size:22px}
+    p.lead{margin:0 0 18px 0;color:var(--muted)}
+    form{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+    .full{grid-column:1/-1}
+    label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+    input,select,textarea{width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+    textarea{min-height:100px;resize:vertical}
+    .events{display:flex;gap:8px;flex-wrap:wrap}
+    .events label{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.02);padding:8px 10px;border-radius:10px;border:1px solid rgba(255,255,255,0.02)}
+    button{grid-column:1/-1;padding:12px 16px;border-radius:12px;border:none;background:linear-gradient(90deg,var(--accent),#6de0ff);color:#022;cursor:pointer;font-weight:600}
+    .status{grid-column:1/-1;padding:10px;border-radius:10px;border:1px dashed rgba(255,255,255,0.03);color:var(--muted);background:rgba(255,255,255,0.01);display:none}
+    .row{display:flex;gap:8px}
+    @media(max-width:720px){form{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="container" role="main">
+    <h1>College Symposium — Registration</h1>
+    <p class="lead">Fill the form to register. All entries will be stored securely in a Google Sheet.</p>
+
+    <form id="regForm">
+      <div>
+        <label for="name">Full name *</label>
+        <input id="name" name="name" type="text" required placeholder="John Doe">
+      </div>
+
+      <div>
+        <label for="email">Email *</label>
+        <input id="email" name="email" type="email" required placeholder="name@college.edu">
+      </div>
+
+      <div>
+        <label for="phone">Phone *</label>
+        <input id="phone" name="phone" type="tel" required placeholder="+91 98XXXXXXXX" pattern="[0-9+\-\s]{7,20}">
+      </div>
+
+      <div>
+        <label for="college">College / Department *</label>
+        <input id="college" name="college" type="text" required placeholder="College of Engineering">
+      </div>
+
+      <div>
+        <label for="year">Year / Batch</label>
+        <select id="year" name="year">
+          <option value="">Select</option>
+          <option>1st Year</option>
+          <option>2nd Year</option>
+          <option>3rd Year</option>
+          <option>4th Year</option>
+          <option>Other</option>
+        </select>
+      </div>
+
+      <div class="full">
+        <label>Events (choose one or more)</label>
+        <div class="events">
+          <label><input type="checkbox" name="events" value="Paper Presentation"> Paper Presentation</label>
+          <label><input type="checkbox" name="events" value="Coding Contest"> Coding Contest</label>
+          <label><input type="checkbox" name="events" value="Poster"> Poster</label>
+          <label><input type="checkbox" name="events" value="Workshop"> Workshop</label>
+          <label><input type="checkbox" name="events" value="Seminar"> Seminar</label>
+        </div>
+      </div>
+
+      <div class="full">
+        <label for="remarks">Remarks / Queries (optional)</label>
+        <textarea id="remarks" name="remarks" placeholder="Any accessibility needs, queries, team members..."></textarea>
+      </div>
+
+      <div class="full">
+        <label for="consent" style="display:flex;align-items:center;gap:8px">
+          <input id="consent" type="checkbox" required>
+          I consent to my details being stored for symposium communication.
+        </label>
+      </div>
+
+      <div class="status" id="status"></div>
+
+      <button type="submit">Submit Registration</button>
+    </form>
+  </div>
+
+  <script>
+    const FORM = document.getElementById('regForm');
+    const STATUS = document.getElementById('status');
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwC7icDsAs77TYZWoqHAK0wGroV8qVcWR_CxCqss3swia6DjSMXy4vnkoUdtc4Jk_aY/exec'; // <-- replace with Apps Script web app URL
+
+    function showStatus(msg, ok = true) {
+      STATUS.style.display = 'block';
+      STATUS.textContent = msg;
+      STATUS.style.borderColor = ok ? 'rgba(0,200,120,0.25)' : 'rgba(255,80,80,0.25)';
+    }
+
+    FORM.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      STATUS.style.display = 'none';
+
+      const formData = new FormData(FORM);
+      const events = Array.from(document.querySelectorAll('input[name="events"]:checked')).map(c=>c.value);
+
+      const payload = {
+        timestamp: new Date().toISOString(),
+        name: formData.get('name') || '',
+        email: formData.get('email') || '',
+        phone: formData.get('phone') || '',
+        college: formData.get('college') || '',
+        year: formData.get('year') || '',
+        events: events.join('; '),
+        remarks: formData.get('remarks') || ''
+      };
+
+      // client-side validation example
+      if (!payload.name || !payload.email || !payload.phone || !payload.college) {
+        showStatus('Please complete required fields (name, email, phone, college).', false);
+        return;
+      }
+
+      try {
+        showStatus('Submitting... please wait');
+
+        const res = await fetch(WEB_APP_URL, {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify(payload)
+        });
+
+        const j = await res.json().catch(()=>({status:'error',message:'Invalid response from server'}));
+        if (res.ok && j.status === 'success') {
+          showStatus('Thanks! Registration submitted successfully. We will email you confirmation.');
+          FORM.reset();
+        } else {
+          showStatus('Submission failed: ' + (j.message || res.statusText || 'unknown error'), false);
+        }
+      } catch (err) {
+        console.error(err);
+        showStatus('Network or server error — try again later.', false);
+      }
+    });
+  </script>
+</body>
+</html>
